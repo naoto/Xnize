@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
 
 require 'yaml/store'
 require 'open-uri'
@@ -13,17 +14,20 @@ class Xnize
   end
 
   def data_load
-    @data = YAML::Store.new(CONFIG_PATH)
-    @data.transaction do
-      if @data[:data].nil?
-        @data = {:prefix => [], :suffix => [], :data => []}
-      end
+    @data = YAML::load_file(CONFIG_PATH) if File.exist?(CONFIG_PATH)
+    if @data.nil?
+      @data = {:prefix => [], :suffix => [], :data => []}
+      save
     end
+  end
+
+  def save
+    open(CONFIG_PATH,'w+').write @data.to_yaml
   end
 
   def generate(word)
     @data[:data].each do |key,val|
-     eval("word.gsub!(/#{key}/,'#{val}')")
+      eval "word.gsub!(/#{key}/,'#{val}')"
     end
     "#{prefix}#{word}#{suffix}"
   end
@@ -74,5 +78,29 @@ end
 
 if $0 == __FILE__
   @nize = Xnize.new
+  if ARGV.size == 1
+    puts @nize.generate(ARGV.first.dup)
+  else
+    case ARGV.shift
+    when "add"
+      @nize.add(ARGV.shift, ARGV.shift)
+    when "del"
+      @nize.delete(ARGV.shift)
+    when "prefix"
+      case ARGV.shift
+      when "add"
+        @nize.add_prefix(ARGV.shift)
+      when "del"
+        @nize.delete_prefix(ARGV.shift)
+      end
+    when "suffix"
+      case ARGV.shift
+      when "add"
+        @nize.add_suffix(ARGV.shift)
+      when "del"
+        @nize.delete_suffix(ARGV.shift)
+      end
+    end
+  end
 end
 
