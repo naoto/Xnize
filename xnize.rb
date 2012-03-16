@@ -3,6 +3,7 @@
 
 require 'yaml/store'
 require 'open-uri'
+require 'nokogiri'
 
 class Xnize
 
@@ -29,7 +30,17 @@ class Xnize
     @data[:data].each do |key,val|
       eval "word.gsub!(/#{key}/,'#{val}')"
     end
-    "#{prefix}#{word}#{suffix}"
+    "#{prefix}#{language word}#{suffix}"
+  end
+
+  def language(text)
+    word = @data[:phrease]
+    xml = Nokogiri::HTML(open(URI.escape("http://jlp.yahooapis.jp/KeyphraseService/V1/extract?appid=#{API}&sentence=#{text}&output=xml")).read)
+    xml.search("keyphrase").each{ |key|
+      break if word.empty?
+      text.gsub!(/(#{key.inner_html})/,'\\1' + "#{word.shift}") 
+    }
+    text
   end
 
   def add(regex, replace)

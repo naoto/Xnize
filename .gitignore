@@ -1,3 +1,5 @@
 sample/*.rb
+sample/*.yml
 data.yaml
 *.swp
+
