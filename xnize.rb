@@ -17,7 +17,7 @@ class Xnize
   def data_load
     @data = YAML::load_file(CONFIG_PATH) if File.exist?(CONFIG_PATH)
     if @data.nil?
-      @data = {:prefix => [], :suffix => [], :data => []}
+      @data = {:prefix => [], :suffix => [], :data => [], :phrease => []}
       save
     end
   end
